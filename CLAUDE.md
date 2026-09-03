@@ -184,3 +184,26 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - After the feature tests pass, ask the user to run the complete suite with `php artisan test --compact`.
 
 </laravel-boost-guidelines>
+
+## Project Conventions
+
+### Primary Keys
+
+- Models use **UUID primary keys** (UUIDv7, time-ordered), not auto-incrementing integers.
+- New migrations must define the primary key as `$table->uuid('id')->primary();` instead of `$table->id();`.
+- New models must `use Illuminate\Database\Eloquent\Concerns\HasUuids;` — this is Laravel's built-in trait; do not write a custom UUID trait/observer. It auto-generates the UUID on creation and sets `keyType`/`incrementing` correctly.
+- Any polymorphic relation (`morphs()`) referencing a UUID model must use `uuidMorphs()` instead of `morphs()`, or the foreign column type won't match.
+- See [app/Models/User.php](app/Models/User.php) and [database/migrations/0001_01_01_000000_create_users_table.php](database/migrations/0001_01_01_000000_create_users_table.php) as the reference implementation.
+
+### Authentication
+
+- API auth uses Laravel Sanctum. `User` uses `Laravel\Sanctum\HasApiTokens`.
+
+### Testing Database
+
+- Tests run against a real MySQL connection (`mysql_test`, configured in `config/database.php`), not SQLite — see `phpunit.xml`.
+- `tests/Pest.php` applies `RefreshDatabase` to all Feature tests.
+
+### Known Gap
+
+- `sessions.user_id` (in `database/migrations/0001_01_01_000000_create_users_table.php`) is still an unsigned bigint `foreignId`, which no longer matches the UUID `users.id`. Only relevant if `SESSION_DRIVER=database` is used. Not yet fixed.
