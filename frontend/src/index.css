@@ -1,1 +1,37 @@
 @import "tailwindcss";
+
+/*
+| Design tokens. Tailwind v4 is configured in CSS, so the brand scale below is
+| what `bg-brand-600`, `text-brand-300`, `ring-brand-500`, etc. resolve to.
+*/
+@theme {
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+  --color-brand-50: oklch(0.971 0.014 277);
+  --color-brand-100: oklch(0.943 0.029 277);
+  --color-brand-200: oklch(0.894 0.057 277);
+  --color-brand-300: oklch(0.822 0.096 277);
+  --color-brand-400: oklch(0.714 0.143 277);
+  --color-brand-500: oklch(0.623 0.184 277);
+  --color-brand-600: oklch(0.548 0.213 277);
+  --color-brand-700: oklch(0.483 0.201 277);
+  --color-brand-800: oklch(0.416 0.168 277);
+  --color-brand-900: oklch(0.362 0.133 277);
+  --color-brand-950: oklch(0.254 0.09 277);
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  body {
+    @apply bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  }
+
+  ::selection {
+    @apply bg-brand-500/25;
+  }
+}
