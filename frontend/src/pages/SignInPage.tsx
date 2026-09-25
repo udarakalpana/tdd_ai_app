@@ -1,13 +1,17 @@
-import { useRef, useState, type FormEvent } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 
+import {
+  clearSignInError,
+  selectSignInError,
+  selectSignInStatus,
+  signIn,
+} from '../auth/authSlice'
 import { Logo } from '../components/Logo'
 import { Alert } from '../components/ui/Alert'
 import { Button } from '../components/ui/Button'
 import { TextField } from '../components/ui/TextField'
-import { useAuth } from '../auth/useAuth'
-import { APP_NAME, APP_TAGLINE, ROUTES } from '../config/app'
-import { normalizeApiError } from '../lib/apiClient'
+import { APP_NAME, APP_TAGLINE } from '../config/app'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
 import type { SignInCredentials } from '../types/api'
 
 type SignInField = keyof SignInCredentials
@@ -46,9 +50,9 @@ const HIGHLIGHTS = [
 ]
 
 const SignInPage = () => {
-  const { signIn } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const dispatch = useAppDispatch()
+  const signInStatus = useAppSelector(selectSignInStatus)
+  const signInError = useAppSelector(selectSignInError)
 
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
@@ -58,22 +62,33 @@ const SignInPage = () => {
     password: '',
   })
   const [fieldErrors, setFieldErrors] = useState<SignInFieldErrors>({})
-  const [formError, setFormError] = useState<string | null>(null)
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const redirectTo =
-    (location.state as { from?: string } | null)?.from ?? ROUTES.dashboard
+  const isSubmitting = signInStatus === 'pending'
+
+  /** A failed attempt should not greet the next visit to this screen. */
+  useEffect(() => {
+    return () => {
+      dispatch(clearSignInError())
+    }
+  }, [dispatch])
 
   const handleChange = (field: SignInField) => (value: string) => {
     setCredentials((current) => ({ ...current, [field]: value }))
     setFieldErrors((current) => ({ ...current, [field]: undefined }))
-    setFormError(null)
+
+    if (signInError) {
+      dispatch(clearSignInError())
+    }
   }
 
+  /**
+   * Success needs no handling here: once `signIn` is fulfilled, `RequireGuest`
+   * redirects the visitor away from this screen.
+   */
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setFormError(null)
+    dispatch(clearSignInError())
 
     const validationErrors = validateCredentials(credentials)
 
@@ -86,26 +101,18 @@ const SignInPage = () => {
     }
 
     setFieldErrors({})
-    setIsSubmitting(true)
 
-    try {
-      await signIn({
+    const result = await dispatch(
+      signIn({
         email: credentials.email.trim(),
         password: credentials.password,
-      })
+      }),
+    )
 
-      navigate(redirectTo, { replace: true })
-    } catch (error) {
-      const apiError = normalizeApiError(error)
-
-      setFormError(apiError.message)
-      setIsSubmitting(false)
-
-      if (apiError.isValidationError) {
-        /* The pair was rejected — never say which half was wrong. */
-        passwordRef.current?.focus()
-        passwordRef.current?.select()
-      }
+    if (signIn.rejected.match(result) && result.payload?.isValidationError) {
+      /* The pair was rejected — never say which half was wrong. */
+      passwordRef.current?.focus()
+      passwordRef.current?.select()
     }
   }
 
@@ -184,7 +191,7 @@ const SignInPage = () => {
           </div>
 
           <form className="flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
-            {formError && <Alert>{formError}</Alert>}
+            {signInError && <Alert>{signInError.message}</Alert>}
 
             <TextField
               id="email"

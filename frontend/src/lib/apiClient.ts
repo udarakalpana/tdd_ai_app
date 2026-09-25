@@ -18,15 +18,15 @@ export const apiClient = axios.create({
   },
 })
 
-let bearerToken: string | null = null
+let resolveAuthToken: () => string | null = () => null
 let onUnauthorized: (() => void) | null = null
 
 /**
- * Keeps the bearer token in one place so every request — including ones fired
- * before React has re-rendered — uses the current value.
+ * Registers where the bearer token comes from. The Redux store is the single
+ * owner of the session, so each request reads the token at send time.
  */
-export const setBearerToken = (token: string | null): void => {
-  bearerToken = token
+export const setAuthTokenResolver = (resolver: () => string | null): void => {
+  resolveAuthToken = resolver
 }
 
 /**
@@ -38,6 +38,8 @@ export const setUnauthorizedHandler = (handler: (() => void) | null): void => {
 }
 
 apiClient.interceptors.request.use((config) => {
+  const bearerToken = resolveAuthToken()
+
   if (bearerToken) {
     const headers = AxiosHeaders.from(config.headers)
     headers.set('Authorization', `Bearer ${bearerToken}`)
