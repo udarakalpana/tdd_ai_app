@@ -1,7 +1,8 @@
-import { useAuth } from '../auth/useAuth'
+import { selectCurrentUser } from '../auth/authSlice'
+import { useAppSelector } from '../store/hooks'
 
 const DashboardPage = () => {
-  const { user } = useAuth()
+  const user = useAppSelector(selectCurrentUser)
 
   return (
     <div className="flex flex-col gap-2">

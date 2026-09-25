@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { useAuth } from '../auth/useAuth'
+import { selectCurrentUser, signOut } from '../auth/authSlice'
 import { Logo } from '../components/Logo'
 import { ROUTES } from '../config/app'
 import { cn } from '../lib/cn'
 import { getInitials } from '../lib/initials'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
 
 type NavbarProps = {
   isSidebarOpen: boolean
@@ -13,7 +14,8 @@ type NavbarProps = {
 }
 
 export const Navbar = ({ isSidebarOpen, onToggleSidebar }: NavbarProps) => {
-  const { user, signOut } = useAuth()
+  const user = useAppSelector(selectCurrentUser)
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
 
   const menuContainerRef = useRef<HTMLDivElement>(null)
@@ -48,7 +50,7 @@ export const Navbar = ({ isSidebarOpen, onToggleSidebar }: NavbarProps) => {
 
   const handleSignOut = () => {
     setIsMenuOpen(false)
-    signOut()
+    dispatch(signOut())
     navigate(ROUTES.signIn, { replace: true })
   }
 

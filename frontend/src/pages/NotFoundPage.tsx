@@ -1,11 +1,12 @@
 import { Link } from 'react-router'
 
-import { useAuth } from '../auth/useAuth'
+import { selectIsAuthenticated } from '../auth/authSlice'
 import { Logo } from '../components/Logo'
 import { ROUTES } from '../config/app'
+import { useAppSelector } from '../store/hooks'
 
 const NotFoundPage = () => {
-  const { isAuthenticated } = useAuth()
+  const isAuthenticated = useAppSelector(selectIsAuthenticated)
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-slate-50 px-6 text-center dark:bg-slate-950">
