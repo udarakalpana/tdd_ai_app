@@ -20,7 +20,7 @@ export const signIn = createAsyncThunk<
 
     return { token, user }
   } catch (error) {
-    return rejectWithValue(normalizeApiError(error))
+    return rejectWithValue(normalizeApiError(error, 'sign-in attempts'))
   }
 })
 

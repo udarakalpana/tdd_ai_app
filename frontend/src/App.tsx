@@ -7,6 +7,7 @@ import { DashboardLayout } from './layouts/DashboardLayout'
 import DashboardPage from './pages/DashboardPage'
 import NotFoundPage from './pages/NotFoundPage'
 import SignInPage from './pages/SignInPage'
+import CreateTaskPage from './pages/tasks/CreateTaskPage'
 
 const router = createBrowserRouter([
   { index: true, element: <Navigate to={ROUTES.dashboard} replace /> },
@@ -19,7 +20,10 @@ const router = createBrowserRouter([
     children: [
       {
         element: <DashboardLayout />,
-        children: [{ path: ROUTES.dashboard, element: <DashboardPage /> }],
+        children: [
+          { path: ROUTES.dashboard, element: <DashboardPage /> },
+          { path: ROUTES.taskCreate, element: <CreateTaskPage /> },
+        ],
       },
     ],
   },

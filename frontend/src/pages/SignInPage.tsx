@@ -16,10 +16,8 @@ import {
   INITIAL_SIGN_IN_CREDENTIALS,
   SIGN_IN_HIGHLIGHTS,
 } from '../utils/constants/signIn'
-import {
-  hasValidationErrors,
-  validateSignInCredentials,
-} from '../utils/validation/signIn'
+import { hasValidationErrors } from '../utils/validation/common'
+import { validateSignInCredentials } from '../utils/validation/signIn'
 
 const SignInPage = () => {
   const dispatch = useAppDispatch()

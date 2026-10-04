@@ -25,9 +25,3 @@ export const validateSignInCredentials = ({
 
   return errors
 }
-
-/**
- * True when at least one field carries a message.
- */
-export const hasValidationErrors = (errors: SignInFieldErrors): boolean =>
-  Object.values(errors).some(Boolean)

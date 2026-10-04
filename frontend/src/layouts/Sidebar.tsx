@@ -1,8 +1,13 @@
+import { useId } from 'react'
 import { NavLink } from 'react-router'
 
 import { Logo } from '../components/Logo'
 import { cn } from '../utils/cn'
-import { NAVIGATION_ITEMS, type NavigationItem } from './navigation'
+import {
+  NAVIGATION_SECTIONS,
+  type NavigationItem,
+  type NavigationSection,
+} from './navigation'
 
 type SidebarProps = {
   isOpen: boolean
@@ -40,13 +45,32 @@ const NavigationLink = ({ item }: { item: NavigationItem }) => (
   </NavLink>
 )
 
+/**
+ * The list is rendered twice (rail and drawer), so the heading id comes from
+ * `useId` to stay unique on the page.
+ */
+const NavigationGroup = ({ section }: { section: NavigationSection }) => {
+  const headingId = useId()
+
+  return (
+    <div role="group" aria-labelledby={headingId} className="flex flex-col gap-1">
+      <p
+        id={headingId}
+        className="px-3 pt-1 pb-2 text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-slate-500"
+      >
+        {section.title}
+      </p>
+      {section.items.map((item) => (
+        <NavigationLink key={item.to} item={item} />
+      ))}
+    </div>
+  )
+}
+
 const NavigationList = () => (
-  <nav aria-label="Main" className="flex flex-1 flex-col gap-1 p-4">
-    <p className="px-3 pt-1 pb-2 text-xs font-semibold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-      Workspace
-    </p>
-    {NAVIGATION_ITEMS.map((item) => (
-      <NavigationLink key={item.to} item={item} />
+  <nav aria-label="Main" className="flex flex-1 flex-col gap-6 p-4">
+    {NAVIGATION_SECTIONS.map((section) => (
+      <NavigationGroup key={section.title} section={section} />
     ))}
   </nav>
 )

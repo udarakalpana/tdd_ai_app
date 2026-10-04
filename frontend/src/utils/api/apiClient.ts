@@ -67,9 +67,9 @@ export type NormalizedApiError = {
   fieldErrors: FieldErrors
   /** HTTP status, or `undefined` when the request never reached the server. */
   status?: number
-  /** True when the credentials themselves were rejected (422). */
+  /** True when the request failed validation (422). */
   isValidationError: boolean
-  /** True when the login rate limiter kicked in (429). */
+  /** True when a rate limiter kicked in (429). */
   isRateLimited: boolean
 }
 
@@ -94,8 +94,14 @@ const describeRetryDelay = (retryAfter: unknown): string => {
 /**
  * Turns anything axios throws into a predictable object the UI can render,
  * so components never have to reach into `error.response.data` themselves.
+ *
+ * `rateLimitedSubject` names what was throttled in the 429 message,
+ * e.g. "sign-in attempts".
  */
-export const normalizeApiError = (error: unknown): NormalizedApiError => {
+export const normalizeApiError = (
+  error: unknown,
+  rateLimitedSubject = 'requests',
+): NormalizedApiError => {
   if (!axios.isAxiosError(error)) {
     return {
       message: GENERIC_MESSAGE,
@@ -128,7 +134,7 @@ export const normalizeApiError = (error: unknown): NormalizedApiError => {
     const retryAfter = describeRetryDelay(response.headers?.['retry-after'])
 
     return {
-      message: `Too many sign-in attempts. Please try again ${retryAfter}.`,
+      message: `Too many ${rateLimitedSubject}. Please try again ${retryAfter}.`,
       fieldErrors: {},
       status,
       isValidationError: false,
