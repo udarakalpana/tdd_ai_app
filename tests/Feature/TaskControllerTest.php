@@ -1,26 +1,63 @@
 <?php
 
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
+
+describe('authentication', function () {
+    it('rejects unauthenticated requests and leaves tasks untouched', function (string $method, string $uri) {
+        $task = Task::factory()->create(['title' => 'Untouched title']);
+
+        $response = $this->json($method, str_replace('{task}', $task->id, $uri), [
+            'title' => 'Changed title',
+        ]);
+
+        $response->assertUnauthorized();
+        $this->assertDatabaseCount('tasks', 1);
+        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'title' => 'Untouched title']);
+    })->with([
+        'index' => ['GET', '/api/tasks'],
+        'store' => ['POST', '/api/tasks'],
+        'show' => ['GET', '/api/tasks/{task}'],
+        'update' => ['PUT', '/api/tasks/{task}'],
+        'destroy' => ['DELETE', '/api/tasks/{task}'],
+    ]);
+});
 
 describe('index', function () {
-    it('lists tasks ordered newest first', function () {
-        $oldest = Task::factory()->create(['created_at' => now()->subDays(2)]);
-        $middle = Task::factory()->create(['created_at' => now()->subDay()]);
-        $newest = Task::factory()->create([
-            'title' => 'first task',
-            'created_at' => now()
-        ]);
+    it('lists the authenticated user\'s tasks ordered newest first', function () {
+        $user = User::factory()->create();
+        $oldest = Task::factory()->for($user)->create(['created_at' => now()->subDays(2)]);
+        $middle = Task::factory()->for($user)->create(['created_at' => now()->subDay()]);
+        $newest = Task::factory()->for($user)->create(['created_at' => now()]);
+        Sanctum::actingAs($user);
 
         $response = $this->getJson('/api/tasks');
 
         $response->assertOk();
+        $response->assertJsonCount(3, 'data');
         $response->assertJsonPath('data.0.id', $newest->id);
         $response->assertJsonPath('data.1.id', $middle->id);
         $response->assertJsonPath('data.2.id', $oldest->id);
     });
 
-    it('returns an empty list when no tasks exist', function () {
+    it('excludes tasks owned by other users', function () {
+        $user = User::factory()->create();
+        $ownTask = Task::factory()->for($user)->create();
+        Task::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson('/api/tasks');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $ownTask->id);
+    });
+
+    it('returns an empty list when the user has no tasks', function () {
+        Sanctum::actingAs(User::factory()->create());
+
         $response = $this->getJson('/api/tasks');
 
         $response->assertOk();
@@ -29,16 +66,17 @@ describe('index', function () {
 });
 
 describe('store', function () {
-    it('creates a task with valid data', function () {
-        $payload = [
+    it('creates a task with valid data and assigns it to the authenticated user', function () {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/tasks', [
             'title' => 'Write project report',
             'description' => 'Summarize Q3 progress',
             'status' => 'in_progress',
             'priority' => 'high',
             'due_date' => '2026-09-10',
-        ];
-
-        $response = $this->postJson('/api/tasks', $payload);
+        ]);
 
         $response->assertCreated();
         $response->assertJsonPath('data.title', 'Write project report');
@@ -48,13 +86,31 @@ describe('store', function () {
 
         $this->assertDatabaseHas('tasks', [
             'id' => $response->json('data.id'),
+            'user_id' => $user->id,
             'title' => 'Write project report',
             'status' => 'in_progress',
             'priority' => 'high',
         ]);
     });
 
+    it('ignores a user_id in the payload', function () {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/tasks', [
+            'title' => 'Minimal task',
+            'user_id' => $otherUser->id,
+        ]);
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('tasks', ['id' => $response->json('data.id'), 'user_id' => $user->id]);
+        $this->assertDatabaseMissing('tasks', ['user_id' => $otherUser->id]);
+    });
+
     it('defaults status to pending and priority to medium when omitted', function () {
+        Sanctum::actingAs(User::factory()->create());
+
         $response = $this->postJson('/api/tasks', ['title' => 'Minimal task']);
 
         $response->assertCreated();
@@ -63,10 +119,13 @@ describe('store', function () {
     });
 
     it('rejects invalid input', function (array $payload, string $invalidField) {
+        Sanctum::actingAs(User::factory()->create());
+
         $response = $this->postJson('/api/tasks', array_merge(['title' => 'Valid title'], $payload));
 
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors($invalidField);
+        $this->assertDatabaseCount('tasks', 0);
     })->with([
         'missing title' => [['title' => ''], 'title'],
         'title too long' => [['title' => str_repeat('a', 256)], 'title'],
@@ -77,8 +136,10 @@ describe('store', function () {
 });
 
 describe('show', function () {
-    it('returns a single task', function () {
-        $task = Task::factory()->create();
+    it('returns a single task owned by the authenticated user', function () {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        Sanctum::actingAs($user);
 
         $response = $this->getJson("/api/tasks/{$task->id}");
 
@@ -87,7 +148,18 @@ describe('show', function () {
         $response->assertJsonPath('data.title', $task->title);
     });
 
+    it('returns 404 for a task owned by another user', function () {
+        $task = Task::factory()->create();
+        Sanctum::actingAs(User::factory()->create());
+
+        $response = $this->getJson("/api/tasks/{$task->id}");
+
+        $response->assertNotFound();
+    });
+
     it('returns 404 when the task does not exist', function () {
+        Sanctum::actingAs(User::factory()->create());
+
         $response = $this->getJson('/api/tasks/'.Str::uuid7());
 
         $response->assertNotFound();
@@ -96,7 +168,9 @@ describe('show', function () {
 
 describe('update', function () {
     it('updates a task with valid data', function () {
-        $task = Task::factory()->create(['title' => 'Old title', 'status' => 'pending']);
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create(['title' => 'Old title', 'status' => 'pending']);
+        Sanctum::actingAs($user);
 
         $response = $this->putJson("/api/tasks/{$task->id}", [
             'title' => 'New title',
@@ -110,7 +184,9 @@ describe('update', function () {
     });
 
     it('allows a partial update of a single field', function () {
-        $task = Task::factory()->create(['title' => 'Keep this title', 'status' => 'pending']);
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create(['title' => 'Keep this title', 'status' => 'pending']);
+        Sanctum::actingAs($user);
 
         $response = $this->patchJson("/api/tasks/{$task->id}", ['status' => 'in_progress']);
 
@@ -120,7 +196,9 @@ describe('update', function () {
     });
 
     it('rejects an invalid status on update', function () {
-        $task = Task::factory()->create();
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        Sanctum::actingAs($user);
 
         $response = $this->putJson("/api/tasks/{$task->id}", ['status' => 'not_a_status']);
 
@@ -128,7 +206,22 @@ describe('update', function () {
         $response->assertJsonValidationErrors('status');
     });
 
+    it('returns 404 for a task owned by another user and leaves it unchanged', function (array $payload) {
+        $task = Task::factory()->create(['title' => 'Untouched title']);
+        Sanctum::actingAs(User::factory()->create());
+
+        $response = $this->putJson("/api/tasks/{$task->id}", $payload);
+
+        $response->assertNotFound();
+        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'title' => 'Untouched title']);
+    })->with([
+        'valid payload' => [['title' => 'Changed title']],
+        'invalid payload' => [['status' => 'not_a_status']],
+    ]);
+
     it('returns 404 when updating a non-existent task', function () {
+        Sanctum::actingAs(User::factory()->create());
+
         $response = $this->putJson('/api/tasks/'.Str::uuid7(), ['title' => 'Anything']);
 
         $response->assertNotFound();
@@ -137,7 +230,9 @@ describe('update', function () {
 
 describe('destroy', function () {
     it('deletes the task', function () {
-        $task = Task::factory()->create();
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        Sanctum::actingAs($user);
 
         $response = $this->deleteJson("/api/tasks/{$task->id}");
 
@@ -145,7 +240,19 @@ describe('destroy', function () {
         $this->assertModelMissing($task);
     });
 
+    it('returns 404 for a task owned by another user and keeps it', function () {
+        $task = Task::factory()->create();
+        Sanctum::actingAs(User::factory()->create());
+
+        $response = $this->deleteJson("/api/tasks/{$task->id}");
+
+        $response->assertNotFound();
+        $this->assertModelExists($task);
+    });
+
     it('returns 404 when deleting a non-existent task', function () {
+        Sanctum::actingAs(User::factory()->create());
+
         $response = $this->deleteJson('/api/tasks/'.Str::uuid7());
 
         $response->assertNotFound();
