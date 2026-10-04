@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router'
 
 import { selectCurrentUser, signOut } from '../auth/authSlice'
 import { Logo } from '../components/Logo'
-import { ROUTES } from '../config/app'
-import { cn } from '../lib/cn'
-import { getInitials } from '../lib/initials'
+import { ROUTES } from '../utils/constants/app'
+import { cn } from '../utils/cn'
+import { getInitials } from '../utils/initials'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 
 type NavbarProps = {

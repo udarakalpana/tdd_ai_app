@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
-import { normalizeApiError, type NormalizedApiError } from '../lib/apiClient'
+import { normalizeApiError, type NormalizedApiError } from '../utils/api/apiClient'
 import type { RootState } from '../store/store'
 import type { AuthenticatedUser, SignInCredentials } from '../types/api'
 import { fetchCurrentUser, requestSignIn } from './authApi'

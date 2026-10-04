@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 
 import { selectIsAuthenticated } from '../auth/authSlice'
 import { Logo } from '../components/Logo'
-import { ROUTES } from '../config/app'
+import { ROUTES } from '../utils/constants/app'
 import { useAppSelector } from '../store/hooks'
 
 const NotFoundPage = () => {

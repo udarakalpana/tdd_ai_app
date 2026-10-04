@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios'
 
-import { API_BASE_URL } from '../config/app'
-import type { FieldErrors, LaravelErrorBody } from '../types/api'
+import { API_BASE_URL } from '../constants/app'
+import type { FieldErrors, LaravelErrorBody } from '../../types/api'
 
 /**
  * Shared axios instance for the Laravel API.

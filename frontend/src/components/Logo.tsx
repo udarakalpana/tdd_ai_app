@@ -1,5 +1,5 @@
-import { APP_NAME } from '../config/app'
-import { cn } from '../lib/cn'
+import { APP_NAME } from '../utils/constants/app'
+import { cn } from '../utils/cn'
 
 type LogoProps = {
   /** Hides the wordmark, leaving only the brandmark. */

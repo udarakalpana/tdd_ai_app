@@ -2,7 +2,7 @@ import { Navigate, RouterProvider, createBrowserRouter } from 'react-router'
 
 import { RequireAuth } from './auth/RequireAuth'
 import { RequireGuest } from './auth/RequireGuest'
-import { ROUTES } from './config/app'
+import { ROUTES } from './utils/constants/app'
 import { DashboardLayout } from './layouts/DashboardLayout'
 import DashboardPage from './pages/DashboardPage'
 import NotFoundPage from './pages/NotFoundPage'
