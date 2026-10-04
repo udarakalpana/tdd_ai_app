@@ -12,4 +12,5 @@ export const API_BASE_URL =
 export const ROUTES = {
   signIn: '/sign-in',
   dashboard: '/dashboard',
+  taskCreate: '/tasks/create',
 } as const
