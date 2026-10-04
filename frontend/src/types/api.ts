@@ -26,3 +26,6 @@ export type LaravelErrorBody = {
   message?: string
   errors?: FieldErrors
 }
+
+/** Lifecycle of a single async request tracked in the store. */
+export type RequestStatus = 'idle' | 'pending' | 'fulfilled' | 'rejected'

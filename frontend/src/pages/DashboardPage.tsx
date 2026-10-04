@@ -1,4 +1,4 @@
-import { selectCurrentUser } from '../auth/authSlice'
+import { selectCurrentUser } from '../auth/authSelectors'
 import { useAppSelector } from '../store/hooks'
 
 const DashboardPage = () => {

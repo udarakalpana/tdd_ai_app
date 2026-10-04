@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 
 import { CheckIcon, EyeIcon, EyeOffIcon } from '../assets/svg'
-import {
-  clearSignInError,
-  selectSignInError,
-  selectSignInStatus,
-  signIn,
-} from '../auth/authSlice'
+import { selectSignInError, selectSignInStatus } from '../auth/authSelectors'
+import { clearSignInError } from '../auth/authSlice'
+import { signIn } from '../auth/authThunks'
 import { Logo } from '../components/Logo'
 import { Alert } from '../components/ui/Alert'
 import { Button } from '../components/ui/Button'

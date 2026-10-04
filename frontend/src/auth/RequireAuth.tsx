@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router'
 import { FullPageLoader } from '../components/FullPageLoader'
 import { ROUTES } from '../utils/constants/app'
 import { useAppSelector } from '../store/hooks'
-import { selectAuthStatus } from './authSlice'
+import { selectAuthStatus } from './authSelectors'
 
 /**
  * Gate for signed-in routes. Remembers where the visitor was heading so they
