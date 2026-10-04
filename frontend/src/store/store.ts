@@ -12,7 +12,9 @@ import {
 /* The ES build — the CommonJS `lib/` default export does not survive bundling. */
 import storage from 'redux-persist/es/storage'
 
-import { authReducer, restoreSession, selectAuthToken, signOut } from '../auth/authSlice'
+import { selectAuthToken } from '../auth/authSelectors'
+import { authReducer, signOut } from '../auth/authSlice'
+import { restoreSession } from '../auth/authThunks'
 import { setAuthTokenResolver, setUnauthorizedHandler } from '../utils/api/apiClient'
 
 /**

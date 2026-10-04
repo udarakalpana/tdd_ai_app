@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { selectCurrentUser, signOut } from '../auth/authSlice'
+import { selectCurrentUser } from '../auth/authSelectors'
+import { signOut } from '../auth/authSlice'
 import { Logo } from '../components/Logo'
 import { ROUTES } from '../utils/constants/app'
 import { cn } from '../utils/cn'

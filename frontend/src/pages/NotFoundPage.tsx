@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 
-import { selectIsAuthenticated } from '../auth/authSlice'
+import { selectIsAuthenticated } from '../auth/authSelectors'
 import { Logo } from '../components/Logo'
 import { ROUTES } from '../utils/constants/app'
 import { useAppSelector } from '../store/hooks'

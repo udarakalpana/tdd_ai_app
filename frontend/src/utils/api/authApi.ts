@@ -1,9 +1,9 @@
-import { apiClient } from '../utils/api/apiClient'
+import { apiClient } from './apiClient'
 import type {
   AuthenticatedUser,
   SignInCredentials,
   SignInResponse,
-} from '../types/api'
+} from '../../types/api'
 
 /**
  * `POST /api/login` — returns the personal access token plus the signed in user.
