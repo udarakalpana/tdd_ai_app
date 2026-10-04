@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router'
 
 import { Logo } from '../components/Logo'
-import { cn } from '../lib/cn'
+import { cn } from '../utils/cn'
 import { NAVIGATION_ITEMS, type NavigationItem } from './navigation'
 
 type SidebarProps = {

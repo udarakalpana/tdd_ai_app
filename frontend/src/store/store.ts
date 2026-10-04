@@ -13,7 +13,7 @@ import {
 import storage from 'redux-persist/es/storage'
 
 import { authReducer, restoreSession, selectAuthToken, signOut } from '../auth/authSlice'
-import { setAuthTokenResolver, setUnauthorizedHandler } from '../lib/apiClient'
+import { setAuthTokenResolver, setUnauthorizedHandler } from '../utils/api/apiClient'
 
 /**
  * Only the session itself survives a reload. Request state (`signInStatus`,

@@ -1,4 +1,4 @@
-import { apiClient } from '../lib/apiClient'
+import { apiClient } from '../utils/api/apiClient'
 import type {
   AuthenticatedUser,
   SignInCredentials,

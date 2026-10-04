@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 
 import { FullPageLoader } from '../components/FullPageLoader'
-import { ROUTES } from '../config/app'
+import { ROUTES } from '../utils/constants/app'
 import { useAppSelector } from '../store/hooks'
 import { selectAuthStatus } from './authSlice'
 

@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-import { cn } from '../../lib/cn'
+import { cn } from '../../utils/cn'
 import { Spinner } from './Spinner'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost'

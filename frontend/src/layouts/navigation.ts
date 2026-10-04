@@ -1,4 +1,4 @@
-import { ROUTES } from '../config/app'
+import { ROUTES } from '../utils/constants/app'
 
 export type NavigationItem = {
   label: string

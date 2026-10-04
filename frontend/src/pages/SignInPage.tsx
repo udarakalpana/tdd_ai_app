@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 
+import { CheckIcon, EyeIcon, EyeOffIcon } from '../assets/svg'
 import {
   clearSignInError,
   selectSignInError,
@@ -10,44 +11,18 @@ import { Logo } from '../components/Logo'
 import { Alert } from '../components/ui/Alert'
 import { Button } from '../components/ui/Button'
 import { TextField } from '../components/ui/TextField'
-import { APP_NAME, APP_TAGLINE } from '../config/app'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import type { SignInCredentials } from '../types/api'
-
-type SignInField = keyof SignInCredentials
-
-type SignInFieldErrors = Partial<Record<SignInField, string>>
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-/**
- * Catching empty and malformed input in the browser keeps obvious mistakes
- * from eating into the API's five-attempts-per-minute login throttle.
- */
-const validateCredentials = ({
-  email,
-  password,
-}: SignInCredentials): SignInFieldErrors => {
-  const errors: SignInFieldErrors = {}
-
-  if (!email.trim()) {
-    errors.email = 'Enter your email address.'
-  } else if (!EMAIL_PATTERN.test(email.trim())) {
-    errors.email = 'Enter a valid email address.'
-  }
-
-  if (!password) {
-    errors.password = 'Enter your password.'
-  }
-
-  return errors
-}
-
-const HIGHLIGHTS = [
-  'Capture what needs doing in seconds.',
-  'Set priorities so the important work stays visible.',
-  'Follow every task from pending through to done.',
-]
+import type { SignInField, SignInFieldErrors } from '../types/signIn'
+import { APP_NAME, APP_TAGLINE } from '../utils/constants/app'
+import {
+  INITIAL_SIGN_IN_CREDENTIALS,
+  SIGN_IN_HIGHLIGHTS,
+} from '../utils/constants/signIn'
+import {
+  hasValidationErrors,
+  validateSignInCredentials,
+} from '../utils/validation/signIn'
 
 const SignInPage = () => {
   const dispatch = useAppDispatch()
@@ -57,10 +32,9 @@ const SignInPage = () => {
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
 
-  const [credentials, setCredentials] = useState<SignInCredentials>({
-    email: '',
-    password: '',
-  })
+  const [credentials, setCredentials] = useState<SignInCredentials>(
+    INITIAL_SIGN_IN_CREDENTIALS,
+  )
   const [fieldErrors, setFieldErrors] = useState<SignInFieldErrors>({})
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
@@ -86,13 +60,13 @@ const SignInPage = () => {
    * Success needs no handling here: once `signIn` is fulfilled, `RequireGuest`
    * redirects the visitor away from this screen.
    */
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
     dispatch(clearSignInError())
 
-    const validationErrors = validateCredentials(credentials)
+    const validationErrors = validateSignInCredentials(credentials)
 
-    if (Object.keys(validationErrors).length > 0) {
+    if (hasValidationErrors(validationErrors)) {
       setFieldErrors(validationErrors)
       const target = validationErrors.email ? emailRef : passwordRef
       target.current?.focus()
@@ -143,26 +117,13 @@ const SignInPage = () => {
           </div>
 
           <ul className="flex flex-col gap-3.5">
-            {HIGHLIGHTS.map((highlight) => (
+            {SIGN_IN_HIGHLIGHTS.map((highlight) => (
               <li
                 key={highlight}
                 className="flex items-start gap-3 text-sm text-brand-50/90"
               >
                 <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-white/15 text-white">
-                  <svg
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="size-3"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="m4 10.5 4 4 8-9"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <CheckIcon className="size-3" />
                 </span>
                 {highlight}
               </li>
@@ -234,39 +195,9 @@ const SignInPage = () => {
                   className="grid size-8 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
                   {isPasswordVisible ? (
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      className="size-4.5"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.8 2.8M9.4 5.2A9.6 9.6 0 0 1 12 4.9c4.6 0 8.2 3.5 9.5 7.1a12 12 0 0 1-2.9 4.2M6.3 6.7A12.3 12.3 0 0 0 2.5 12c1.3 3.6 4.9 7.1 9.5 7.1 1.5 0 2.9-.4 4.1-1"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    <EyeOffIcon className="size-4.5" />
                   ) : (
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      className="size-4.5"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M2.5 12C3.8 8.4 7.4 4.9 12 4.9s8.2 3.5 9.5 7.1c-1.3 3.6-4.9 7.1-9.5 7.1S3.8 15.6 2.5 12Z"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                      />
-                      <circle
-                        cx="12"
-                        cy="12"
-                        r="2.6"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                      />
-                    </svg>
+                    <EyeIcon className="size-4.5" />
                   )}
                 </button>
               }
