@@ -93,7 +93,7 @@ describe('store', function () {
         ]);
     });
 
-    it('ignores a user_id in the payload', function () {
+    it('ignores a other user_id in the payload when try to create task', function () {
         $user = User::factory()->create();
         $otherUser = User::factory()->create();
         Sanctum::actingAs($user);
