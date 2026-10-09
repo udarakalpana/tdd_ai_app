@@ -7,17 +7,20 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpFoundation\Response;
 
 class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $tasks = Task::query()
+        $tasks = $request->user()
+            ->tasks()
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(15);
@@ -30,7 +33,7 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request): JsonResponse
     {
-        $task = Task::create($request->validated());
+        $task = $request->user()->tasks()->create($request->validated());
 
         return TaskResource::make($task)
             ->response()
@@ -42,6 +45,8 @@ class TaskController extends Controller
      */
     public function show(Task $task): TaskResource
     {
+        Gate::authorize('view', $task);
+
         return TaskResource::make($task);
     }
 
@@ -60,6 +65,8 @@ class TaskController extends Controller
      */
     public function destroy(Task $task): Response
     {
+        Gate::authorize('delete', $task);
+
         $task->delete();
 
         return response()->noContent();

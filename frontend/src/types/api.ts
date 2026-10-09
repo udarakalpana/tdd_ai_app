@@ -29,3 +29,8 @@ export type LaravelErrorBody = {
 
 /** Lifecycle of a single async request tracked in the store. */
 export type RequestStatus = 'idle' | 'pending' | 'fulfilled' | 'rejected'
+
+/** Body of a single Laravel `JsonResource` response: `{ data: T }`. */
+export type ApiResource<T> = {
+  data: T
+}
