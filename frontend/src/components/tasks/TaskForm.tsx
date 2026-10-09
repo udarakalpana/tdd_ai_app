@@ -2,14 +2,13 @@ import {
     useEffect,
     useImperativeHandle,
     useRef,
-    type Ref,
     type SubmitEvent,
 } from "react";
 
 import type {
+    FocusableField,
     TaskField,
-    TaskFieldErrors,
-    TaskFormValues,
+    TaskFormProps,
 } from "../../types/task";
 import {
     TASK_PRIORITY_OPTIONS,
@@ -20,29 +19,6 @@ import { Button } from "../ui/Button";
 import { SelectField } from "../ui/SelectField";
 import { TextareaField } from "../ui/TextareaField";
 import { TextField } from "../ui/TextField";
-
-export type TaskFormHandle = {
-    /** Moves focus to a field, waiting until it is enabled again if needed. */
-    focusField: (field: TaskField) => void;
-};
-
-type TaskFormProps = {
-    values: TaskFormValues;
-    errors: TaskFieldErrors;
-    isSubmitting: boolean;
-    submitLabel: string;
-    submittingLabel: string;
-    onFieldChange: <TField extends TaskField>(
-        field: TField,
-        value: TaskFormValues[TField],
-    ) => void;
-    onSubmit: () => void;
-    onCancel: () => void;
-    ref?: Ref<TaskFormHandle>;
-};
-
-type FocusableField =
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 /**
  * Presentational task form. It owns no data and makes no requests, so the same
