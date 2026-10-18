@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 
 import { Navbar } from './Navbar'
-import { Sidebar } from './Sidebar'
+import { Sidebar } from './sidebar/Sidebar.tsx'
 
 /**
  * Application shell for signed-in routes: fixed navbar, sidebar, content outlet.
