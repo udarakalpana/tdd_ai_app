@@ -1,5 +1,5 @@
 import type { NormalizedApiError } from "../utils/api/apiClient";
-import { type Ref } from "react";
+import { type ReactNode, type Ref } from "react";
 
 /** Mirrors the `TaskStatus` enum on the Laravel side. */
 export type TaskStatus = "pending" | "in_progress" | "completed";
@@ -72,3 +72,13 @@ export type TaskFormProps = {
 
 export type FocusableField =
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+
+export type FormFieldProps = {
+    id: string;
+    label: string;
+    /** Rendered under the control and announced to screen readers. */
+    error?: string;
+    /** Adds an "Optional" hint next to the label. */
+    isOptional?: boolean;
+    children: ReactNode;
+};
