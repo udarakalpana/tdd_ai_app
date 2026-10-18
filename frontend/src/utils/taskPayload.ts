@@ -1,1 +1,19 @@
-import type { CreateTaskPayload, TaskFormValues } from '../types/task'/** * Converts form state into the API payload: trims free text and sends empty * optional fields as `null` rather than empty strings. */export const toCreateTaskPayload = ({  title,  description,  status,  priority,  due_date,}: TaskFormValues): CreateTaskPayload => ({  title: title.trim(),  description: description.trim() || null,  status,  priority,  due_date: due_date || null,})
+import type { CreateTaskPayload, TaskFormValues } from "../types/task";
+
+/**
+ * Converts form state into the API payload: trims free text and sends empty
+ * optional fields as `null` rather than empty strings.
+ */
+export const toCreateTaskPayload = ({
+    title,
+    description,
+    status,
+    priority,
+    due_date,
+}: TaskFormValues): CreateTaskPayload => ({
+    title: title.trim(),
+    description: description.trim() || null,
+    status,
+    priority,
+    due_date: due_date || null,
+});
