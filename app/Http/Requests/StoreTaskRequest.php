@@ -26,7 +26,7 @@ class StoreTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
+            'title' => ['required', 'string', 'min:8', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::enum(TaskStatus::class)],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
