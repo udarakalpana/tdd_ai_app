@@ -1,1 +1,5 @@
-/** One entry of a `<select>`, typed by the values the field accepts. */export type SelectOption<TValue extends string> = {  value: TValue  label: string}
+/** One entry of a `<select>`, typed by the values the field accepts. */
+export type SelectOption<TValue extends string> = {
+    value: TValue;
+    label: string;
+};
