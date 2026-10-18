@@ -1,4 +1,4 @@
-import type { Ref, SelectHTMLAttributes } from "react";
+import type { Ref, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import type { SelectOption } from "./ui.ts";
 
 export type SelectFieldProps<TValue extends string> = Omit<
@@ -14,4 +14,17 @@ export type SelectFieldProps<TValue extends string> = Omit<
     /** Rendered under the field and announced to screen readers. */
     error?: string;
     ref?: Ref<HTMLSelectElement>;
+};
+
+export type TextareaFieldProps = Omit<
+    TextareaHTMLAttributes<HTMLTextAreaElement>,
+    "id"
+> & {
+    id: string;
+    label: string;
+    /** Rendered under the field and announced to screen readers. */
+    error?: string;
+    /** Adds an "Optional" hint next to the label. */
+    isOptional?: boolean;
+    ref?: Ref<HTMLTextAreaElement>;
 };
