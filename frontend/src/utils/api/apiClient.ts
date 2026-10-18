@@ -1,7 +1,7 @@
-import axios, { AxiosError, AxiosHeaders } from 'axios'
+import axios, { AxiosError, AxiosHeaders } from "axios";
 
-import { API_BASE_URL } from '../constants/app'
-import type { FieldErrors, LaravelErrorBody } from '../../types/api'
+import { API_BASE_URL } from "../constants/app";
+import type { FieldErrors, LaravelErrorBody } from "../../types/api";
 
 /**
  * Shared axios instance for the Laravel API.
@@ -10,86 +10,86 @@ import type { FieldErrors, LaravelErrorBody } from '../../types/api'
  * failures with a redirect instead of a 422 JSON body.
  */
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 15_000,
-  headers: {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-  },
-})
+    baseURL: API_BASE_URL,
+    timeout: 15_000,
+    headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+    },
+});
 
-let resolveAuthToken: () => string | null = () => null
-let onUnauthorized: (() => void) | null = null
+let resolveAuthToken: () => string | null = () => null;
+let onUnauthorized: (() => void) | null = null;
 
 /**
  * Registers where the bearer token comes from. The Redux store is the single
  * owner of the session, so each request reads the token at send time.
  */
 export const setAuthTokenResolver = (resolver: () => string | null): void => {
-  resolveAuthToken = resolver
-}
+    resolveAuthToken = resolver;
+};
 
 /**
  * Registers the callback used when the API rejects our token (expired,
  * revoked, or cleared server-side).
  */
 export const setUnauthorizedHandler = (handler: (() => void) | null): void => {
-  onUnauthorized = handler
-}
+    onUnauthorized = handler;
+};
 
 apiClient.interceptors.request.use((config) => {
-  const bearerToken = resolveAuthToken()
+    const bearerToken = resolveAuthToken();
 
-  if (bearerToken) {
-    const headers = AxiosHeaders.from(config.headers)
-    headers.set('Authorization', `Bearer ${bearerToken}`)
-    config.headers = headers
-  }
-
-  return config
-})
-
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      onUnauthorized?.()
+    if (bearerToken) {
+        const headers = AxiosHeaders.from(config.headers);
+        headers.set("Authorization", `Bearer ${bearerToken}`);
+        config.headers = headers;
     }
 
-    return Promise.reject(error)
-  },
-)
+    return config;
+});
+
+apiClient.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+        if (error.response?.status === 401) {
+            onUnauthorized?.();
+        }
+
+        return Promise.reject(error);
+    },
+);
 
 export type NormalizedApiError = {
-  /** Human-readable message safe to render in the UI. */
-  message: string
-  /** Per-field validation messages, empty when the failure was not a 422. */
-  fieldErrors: FieldErrors
-  /** HTTP status, or `undefined` when the request never reached the server. */
-  status?: number
-  /** True when the request failed validation (422). */
-  isValidationError: boolean
-  /** True when a rate limiter kicked in (429). */
-  isRateLimited: boolean
-}
+    /** Human-readable message safe to render in the UI. */
+    message: string;
+    /** Per-field validation messages, empty when the failure was not a 422. */
+    fieldErrors: FieldErrors;
+    /** HTTP status, or `undefined` when the request never reached the server. */
+    status?: number;
+    /** True when the request failed validation (422). */
+    isValidationError: boolean;
+    /** True when a rate limiter kicked in (429). */
+    isRateLimited: boolean;
+};
 
-const GENERIC_MESSAGE = 'Something went wrong. Please try again.'
+const GENERIC_MESSAGE = "Something went wrong. Please try again.";
 
 const describeRetryDelay = (retryAfter: unknown): string => {
-  const seconds = Number(retryAfter)
+    const seconds = Number(retryAfter);
 
-  if (!Number.isFinite(seconds) || seconds <= 0) {
-    return 'in a moment'
-  }
+    if (!Number.isFinite(seconds) || seconds <= 0) {
+        return "in a moment";
+    }
 
-  if (seconds < 60) {
-    return `in ${Math.ceil(seconds)} second${Math.ceil(seconds) === 1 ? '' : 's'}`
-  }
+    if (seconds < 60) {
+        return `in ${Math.ceil(seconds)} second${Math.ceil(seconds) === 1 ? "" : "s"}`;
+    }
 
-  const minutes = Math.ceil(seconds / 60)
+    const minutes = Math.ceil(seconds / 60);
 
-  return `in ${minutes} minute${minutes === 1 ? '' : 's'}`
-}
+    return `in ${minutes} minute${minutes === 1 ? "" : "s"}`;
+};
 
 /**
  * Turns anything axios throws into a predictable object the UI can render,
@@ -99,57 +99,60 @@ const describeRetryDelay = (retryAfter: unknown): string => {
  * e.g. "sign-in attempts".
  */
 export const normalizeApiError = (
-  error: unknown,
-  rateLimitedSubject = 'requests',
+    error: unknown,
+    rateLimitedSubject = "requests",
 ): NormalizedApiError => {
-  if (!axios.isAxiosError(error)) {
-    return {
-      message: GENERIC_MESSAGE,
-      fieldErrors: {},
-      isValidationError: false,
-      isRateLimited: false,
+    if (!axios.isAxiosError(error)) {
+        return {
+            message: GENERIC_MESSAGE,
+            fieldErrors: {},
+            isValidationError: false,
+            isRateLimited: false,
+        };
     }
-  }
 
-  const { response } = error as AxiosError<LaravelErrorBody>
+    const { response } = error as AxiosError<LaravelErrorBody>;
 
-  if (!response) {
+    if (!response) {
+        const message =
+            error.code === "ECONNABORTED"
+                ? "The server took too long to respond. Please try again."
+                : "We could not reach the server. Check your connection and try again.";
+
+        return {
+            message,
+            fieldErrors: {},
+            isValidationError: false,
+            isRateLimited: false,
+        };
+    }
+
+    const status = response.status;
+    const fieldErrors = response.data?.errors ?? {};
+
+    if (status === 429) {
+        const retryAfter = describeRetryDelay(
+            response.headers?.["retry-after"],
+        );
+
+        return {
+            message: `Too many ${rateLimitedSubject}. Please try again ${retryAfter}.`,
+            fieldErrors: {},
+            status,
+            isValidationError: false,
+            isRateLimited: true,
+        };
+    }
+
+    const firstFieldError = Object.values(fieldErrors)[0]?.[0];
     const message =
-      error.code === 'ECONNABORTED'
-        ? 'The server took too long to respond. Please try again.'
-        : 'We could not reach the server. Check your connection and try again.'
+        response.data?.message ?? firstFieldError ?? GENERIC_MESSAGE;
 
     return {
-      message,
-      fieldErrors: {},
-      isValidationError: false,
-      isRateLimited: false,
-    }
-  }
-
-  const status = response.status
-  const fieldErrors = response.data?.errors ?? {}
-
-  if (status === 429) {
-    const retryAfter = describeRetryDelay(response.headers?.['retry-after'])
-
-    return {
-      message: `Too many ${rateLimitedSubject}. Please try again ${retryAfter}.`,
-      fieldErrors: {},
-      status,
-      isValidationError: false,
-      isRateLimited: true,
-    }
-  }
-
-  const firstFieldError = Object.values(fieldErrors)[0]?.[0]
-  const message = response.data?.message ?? firstFieldError ?? GENERIC_MESSAGE
-
-  return {
-    message: status >= 500 ? GENERIC_MESSAGE : message,
-    fieldErrors,
-    status,
-    isValidationError: status === 422,
-    isRateLimited: false,
-  }
-}
+        message: status >= 500 ? GENERIC_MESSAGE : message,
+        fieldErrors,
+        status,
+        isValidationError: status === 422,
+        isRateLimited: false,
+    };
+};
