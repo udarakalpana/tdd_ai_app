@@ -1,1 +1,34 @@
-import { useCallback, useState } from 'react'import { normalizeApiError } from '../utils/api/apiClient'import { requestCreateTask } from '../utils/api/tasksApi'import type { CreateTaskPayload, CreateTaskResult } from '../types/task'/** * Creates a task and tracks whether the request is in flight. * * The outcome is returned instead of stored: only the calling screen cares * about it, so it decides how to render success and failure. */export const useCreateTask = () => {  const [isCreating, setIsCreating] = useState(false)  const createTask = useCallback(    async (payload: CreateTaskPayload): Promise<CreateTaskResult> => {      setIsCreating(true)      try {        const task = await requestCreateTask(payload)        return { isSuccess: true, task }      } catch (error) {        return { isSuccess: false, error: normalizeApiError(error) }      } finally {        setIsCreating(false)      }    },    [],  )  return { createTask, isCreating }}
+import { useCallback, useState } from "react";
+
+import { normalizeApiError } from "../utils/api/apiClient";
+import { requestCreateTask } from "../utils/api/tasksApi";
+import type { CreateTaskPayload, CreateTaskResult } from "../types/task";
+
+/**
+ * Creates a task and tracks whether the request is in flight.
+ *
+ * The outcome is returned instead of stored: only the calling screen cares
+ * about it, so it decides how to render success and failure.
+ */
+export const useCreateTask = () => {
+    const [isCreating, setIsCreating] = useState(false);
+
+    const createTask = useCallback(
+        async (payload: CreateTaskPayload): Promise<CreateTaskResult> => {
+            setIsCreating(true);
+
+            try {
+                const task = await requestCreateTask(payload);
+
+                return { isSuccess: true, task };
+            } catch (error) {
+                return { isSuccess: false, error: normalizeApiError(error) };
+            } finally {
+                setIsCreating(false);
+            }
+        },
+        [],
+    );
+
+    return { createTask, isCreating };
+};
