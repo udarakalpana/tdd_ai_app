@@ -1,24 +1,8 @@
-import type { Ref, SelectHTMLAttributes } from "react";
-
-import type { SelectOption } from "../../types/ui";
 import { cn } from "../../utils/cn";
 import { getFieldControlClasses, getFieldErrorId } from "./field";
 import { FormField } from "./FormField";
-
-type SelectFieldProps<TValue extends string> = Omit<
-    SelectHTMLAttributes<HTMLSelectElement>,
-    "id" | "value" | "onChange"
-> & {
-    id: string;
-    label: string;
-    options: readonly SelectOption<TValue>[];
-    value: TValue;
-    /** Receives the selected option's value, already narrowed to `TValue`. */
-    onValueChange: (value: TValue) => void;
-    /** Rendered under the field and announced to screen readers. */
-    error?: string;
-    ref?: Ref<HTMLSelectElement>;
-};
+import type { SelectFieldProps } from "../../types/fields.ts";
+import ArrowDown from "../../assets/svg/ArrowDown.tsx";
 
 /**
  * Native `<select>` styled to match `TextField`. Native keeps keyboard,
@@ -61,20 +45,7 @@ export const SelectField = <TValue extends string>({
                 ))}
             </select>
 
-            <svg
-                viewBox="0 0 20 20"
-                fill="none"
-                className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-slate-400"
-                aria-hidden="true"
-            >
-                <path
-                    d="m5 7.5 5 5 5-5"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-            </svg>
+            <ArrowDown />
         </div>
     </FormField>
 );
