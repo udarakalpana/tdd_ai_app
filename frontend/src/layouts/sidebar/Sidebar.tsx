@@ -1,10 +1,10 @@
 import { useId } from "react";
 import { NavLink } from "react-router";
 
-import { Logo } from "../components/Logo";
-import { cn } from "../utils/cn";
-import { NAVIGATION_SECTIONS } from "./navigation";
-import type { NavigationItem, NavigationSection } from "../types/navigation";
+import { Logo } from "../../components/Logo.tsx";
+import { cn } from "../../utils/cn.ts";
+import { NAVIGATION_SECTIONS } from "../navigation.ts";
+import type { NavigationItem, NavigationSection } from "../../types/navigation";
 
 type SidebarProps = {
     isOpen: boolean;
