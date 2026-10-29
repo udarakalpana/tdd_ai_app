@@ -17,6 +17,12 @@ export const NAVIGATION_SECTIONS: NavigationSection[] = [
         title: "Task management",
         items: [
             {
+                label: "All tasks",
+                to: ROUTES.tasks,
+                iconPath:
+                    "M4 5h2v2H4V5Zm4 0h12v2H8V5Zm-4 6h2v2H4v-2Zm4 0h12v2H8v-2Zm-4 6h2v2H4v-2Zm4 0h12v2H8v-2Z",
+            },
+            {
                 label: "Create task",
                 to: ROUTES.taskCreate,
                 iconPath:

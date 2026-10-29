@@ -34,3 +34,21 @@ export type RequestStatus = 'idle' | 'pending' | 'fulfilled' | 'rejected'
 export type ApiResource<T> = {
   data: T
 }
+
+/** `meta` block Laravel adds to a paginated resource collection. */
+export type PaginationMeta = {
+  current_page: number
+  last_page: number
+  per_page: number
+  total: number
+  /** Position of the first item on the page, or `null` when the page is empty. */
+  from: number | null
+  /** Position of the last item on the page, or `null` when the page is empty. */
+  to: number | null
+}
+
+/** Body of a paginated Laravel resource collection: `{ data: T[], meta }`. */
+export type PaginatedApiResource<T> = {
+  data: T[]
+  meta: PaginationMeta
+}

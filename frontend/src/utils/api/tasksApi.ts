@@ -1,6 +1,21 @@
 import { apiClient } from "./apiClient";
-import type { ApiResource } from "../../types/api";
+import type { ApiResource, PaginatedApiResource } from "../../types/api";
 import type { CreateTaskPayload, Task } from "../../types/task";
+
+/**
+ * `GET /api/tasks?page=N` — one page of the signed in user's tasks, newest first.
+ */
+export const requestTasks = async (
+    page: number,
+    signal?: AbortSignal,
+): Promise<PaginatedApiResource<Task>> => {
+    const { data } = await apiClient.get<PaginatedApiResource<Task>>("/tasks", {
+        params: { page },
+        signal,
+    });
+
+    return data;
+};
 
 /**
  * `POST /api/tasks` — creates a task owned by the signed in user.

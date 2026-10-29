@@ -1,4 +1,5 @@
 import type { NormalizedApiError } from "../utils/api/apiClient";
+import type { PaginationMeta } from "./api";
 import { type ReactNode, type Ref } from "react";
 
 /** Mirrors the `TaskStatus` enum on the Laravel side. */
@@ -45,6 +46,23 @@ export type TaskField = keyof TaskFormValues;
 
 /** Validation messages keyed by the field they belong to. */
 export type TaskFieldErrors = Partial<Record<TaskField, string>>;
+
+/** What `useTasks` last settled on, tagged with the request it answers. */
+export type TaskListState = {
+    requestKey: string | null;
+    tasks: Task[];
+    meta: PaginationMeta | null;
+    error: NormalizedApiError | null;
+};
+
+export type TaskTableProps = {
+    tasks: Task[];
+    /** True until the first page has loaded. */
+    isInitialLoading: boolean;
+    /** True while a later page replaces the rows already on screen. */
+    isRefreshing: boolean;
+    onCreateTask: () => void;
+};
 
 export type CreateTaskResult =
     | { isSuccess: true; task: Task }

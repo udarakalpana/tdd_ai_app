@@ -23,7 +23,7 @@ class TaskController extends Controller
             ->tasks()
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->paginate(15);
+            ->paginate(10);
 
         return TaskResource::collection($tasks);
     }

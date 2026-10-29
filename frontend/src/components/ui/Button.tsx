@@ -3,10 +3,13 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { cn } from '../../utils/cn'
 import { Spinner } from './Spinner'
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost'
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
+
+type ButtonSize = 'md' | 'sm'
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant
+  size?: ButtonSize
   /** Swaps the label for a spinner and blocks further submits. */
   isLoading?: boolean
   loadingLabel?: string
@@ -14,7 +17,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 const BASE_CLASSES =
-  'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-slate-950'
+  'inline-flex items-center justify-center gap-2 font-semibold transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-slate-950'
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
@@ -23,10 +26,18 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
     'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800',
   ghost:
     'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50',
+  danger:
+    'border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 dark:border-rose-500/30 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-500/10',
+}
+
+const SIZE_CLASSES: Record<ButtonSize, string> = {
+  md: 'rounded-xl px-4 py-2.5 text-sm',
+  sm: 'rounded-lg px-2.5 py-1.5 text-xs',
 }
 
 export const Button = ({
   variant = 'primary',
+  size = 'md',
   isLoading = false,
   loadingLabel,
   className,
@@ -39,7 +50,12 @@ export const Button = ({
     type={type}
     disabled={disabled ?? isLoading}
     aria-busy={isLoading || undefined}
-    className={cn(BASE_CLASSES, VARIANT_CLASSES[variant], className)}
+    className={cn(
+      BASE_CLASSES,
+      VARIANT_CLASSES[variant],
+      SIZE_CLASSES[size],
+      className,
+    )}
     {...props}
   >
     {isLoading && <Spinner className="size-4" />}

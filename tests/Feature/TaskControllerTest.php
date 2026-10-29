@@ -55,6 +55,23 @@ describe('index', function () {
         $response->assertJsonPath('data.0.id', $ownTask->id);
     });
 
+    it('paginates tasks ten per page', function () {
+        $user = User::factory()->create();
+        Task::factory()->for($user)->count(11)->create();
+        Sanctum::actingAs($user);
+
+        $firstPage = $this->getJson('/api/tasks');
+        $secondPage = $this->getJson('/api/tasks?page=2');
+
+        $firstPage->assertOk();
+        $firstPage->assertJsonCount(10, 'data');
+        $firstPage->assertJsonPath('meta.per_page', 10);
+        $firstPage->assertJsonPath('meta.total', 11);
+        $firstPage->assertJsonPath('meta.last_page', 2);
+        $secondPage->assertOk();
+        $secondPage->assertJsonCount(1, 'data');
+    });
+
     it('returns an empty list when the user has no tasks', function () {
         Sanctum::actingAs(User::factory()->create());
 
